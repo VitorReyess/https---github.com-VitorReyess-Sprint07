@@ -1,0 +1,68 @@
+// sprint 7/Jenkinsfile
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout do Código') {
+            steps {
+                git url: 'https://github.com/<SEU_USUARIO>/<SEU_REPOSITORIO>.git',
+                    credentialsId: '<ID_DA_SUA_CREDENTIAL_NO_JENKINS>', // Mantenha vazio se o repo for público ou se for SSH key configurada diretamente no agente
+                    branch: 'main' // ou 'master', dependendo do nome da sua branch principal
+            }
+        }
+        stage('Build Simples') {
+            steps {
+                echo "Iniciando build simulado para os microsserviços da Vinheria Agnello..."
+                script {
+                    // Simula "build" verificando arquivos
+                    echo "Verificando arquivos em servico-produtos..."
+                    sh 'ls -la servico-produtos/'
+                    echo "Verificando arquivos em servico-pedidos..."
+                    sh 'ls -la servico-pedidos/'
+                }
+                echo "Build simulado concluído com sucesso!"
+            }
+        }
+        stage('Deploy em Pasta de Publicação') {
+            steps {
+                echo "Iniciando deploy simulado dos microsserviços para ambiente de produção..."
+                script {
+                    // Define um diretório temporário para simular o deploy
+                    // Em um ambiente real, isso seria um servidor de aplicação, kubernetes, etc.
+                    def deployDir = "/tmp/vinheria_deploy_${env.BUILD_NUMBER}" // Usa número do build para pastas únicas
+                    sh "mkdir -p ${deployDir}/servico-produtos"
+                    sh "mkdir -p ${deployDir}/servico-pedidos"
+
+                    // Copia os arquivos dos serviços para o diretório de deploy simulado
+                    sh "cp -R servico-produtos/* ${deployDir}/servico-produtos/"
+                    sh "cp -R servico-pedidos/* ${deployDir}/servico-pedidos/"
+
+                    echo "Deploy dos microsserviços simulado para o diretório: ${deployDir}"
+                    echo "Conteúdo de ${deployDir}/servico-produtos:"
+                    sh "ls -la ${deployDir}/servico-produtos"
+                    echo "Conteúdo de ${deployDir}/servico-pedidos:"
+                    sh "ls -la ${deployDir}/servico-pedidos"
+                    echo "Simulação de restart de serviços (se fosse um deploy real)..."
+                }
+                echo "Deploy simulado concluído!"
+            }
+        }
+    }
+    post {
+        always {
+            echo 'Pipeline da Vinheria Agnello finalizado.'
+        }
+        success {
+            echo 'Status do Pipeline: SUCESSO! 🎉 Tudo pronto para a próxima safra.'
+        }
+        failure {
+            echo 'Status do Pipeline: FALHA! �� O deploy da Vinheria Agnello encontrou problemas.'
+            // Você pode adicionar notificações aqui
+        }
+        // clean up temporary directories
+        # cleanup {
+        #     sh "rm -rf /tmp/vinheria_deploy_${env.BUILD_NUMBER}"
+        #     echo "Diretório temporário de deploy limpo."
+        # }
+    }
+}

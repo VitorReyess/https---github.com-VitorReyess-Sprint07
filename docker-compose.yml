@@ -1,0 +1,31 @@
+# sprint 7/docker-compose.yml
+version: '3.8'
+
+services:
+  servico-produtos:
+    build: ./servico-produtos
+    ports:
+      - "5001:5001"
+    networks:
+      - vinheria_network
+    environment:
+      # Exemplo de variável de ambiente, se precisar no futuro
+      - SERVICE_NAME=ServicoProdutos
+
+  servico-pedidos:
+    build: ./servico-pedidos
+    ports:
+      - "5002:5002"
+    networks:
+      - vinheria_network
+    depends_on:
+      - servico-produtos # Garante que produtos suba antes
+    environment:
+      - SERVICE_NAME=ServicoPedidos
+      - PRODUCTS_SERVICE_URL=http://servico-produtos:5001 # Variável de ambiente para URL do serviço de produtos
+
+networks:
+  vinheria_network:
+    driver: bridge
+    # driver_opts:
+    #   com.docker.network.enable_ipv6: "true" # Exemplo, se precisar de IPv6
